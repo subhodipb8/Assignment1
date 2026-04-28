@@ -1,0 +1,6 @@
+@CafeteriaAPI_HostAddress = http://localhost:5070
+
+GET {{CafeteriaAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
