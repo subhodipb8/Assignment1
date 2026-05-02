@@ -49,6 +49,26 @@ namespace CafeteriaAPI.Data
                 context.Users.Add(canteenUser);
                 context.SaveChanges();
             }
+
+            // Seed student user if not exists
+            if (!context.Users.Any(u => u.Email == "student@cafeteria.com"))
+            {
+                var studentUser = new User
+                {
+                    Name = "Demo Student",
+                    Email = "student@cafeteria.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                    Role = "student",
+                    WalletBalance = 500,
+                    DietaryPreferences = new List<string> { "vegetarian" },
+                    Allergies = new List<string>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                context.Users.Add(studentUser);
+                context.SaveChanges();
+            }
         }
     }
 }
