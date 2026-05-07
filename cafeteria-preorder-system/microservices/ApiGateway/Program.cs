@@ -4,11 +4,54 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ApiGateway.DelegatingHandlers;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Ocelot configuration
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+
+// Add Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Cafeteria API Gateway",
+        Version = "v1",
+        Description = "API Gateway for Cafeteria Pre-ordering System Microservices",
+        Contact = new OpenApiContact
+        {
+            Name = "Cafeteria Support",
+            Email = "support@cafeteria.com"
+        }
+    });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Configure JWT Authentication for Gateway
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -52,6 +95,15 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Configure Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Cafeteria API Gateway v1");
+    c.RoutePrefix = "swagger";
+    c.DocumentTitle = "Cafeteria API Documentation";
+});
 
 app.UseCors("AllowReactApp");
 app.UseAuthentication();

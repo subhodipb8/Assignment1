@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using AuthService.Data;
 using AuthService.Services;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,27 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Auth Service API",
+        Version = "v1",
+        Description = "Authentication and User Management API for Cafeteria System"
+    });
+});
+
 var app = builder.Build();
+
+// Configure Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth Service API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseCors("AllowAll");
 app.UseAuthorization();

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MenuService.Data;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,27 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Menu Service API",
+        Version = "v1",
+        Description = "Menu Management API for Cafeteria System"
+    });
+});
+
 var app = builder.Build();
+
+// Configure Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Menu Service API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseCors("AllowAll");
 app.UseAuthorization();
