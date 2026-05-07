@@ -64,27 +64,63 @@ const Home: React.FC = () => {
       {/* Dashboard Section for Authenticated Users */}
       {isAuthenticated && (
         <div className="dashboard-section">
+          <div className="dashboard-bg-pattern"></div>
           <div className="dashboard-container">
-            <div className="welcome-header">
-              <h2>Welcome back, {user?.name}! 👋</h2>
-              <p>Here's what you can do today</p>
+            <div className="welcome-card">
+              <div className="welcome-accent"></div>
+              <div className="welcome-content">
+                <div className="welcome-avatar">
+                  <span>{user?.name?.charAt(0).toUpperCase() || '👤'}</span>
+                </div>
+                <div className="welcome-text">
+                  <h2>Welcome back, {user?.name}! 👋</h2>
+                  <p>Ready to {user?.role === 'admin' || user?.role === 'canteen' ? 'manage your cafeteria' : 'enjoy some delicious food'}?</p>
+                  <div className="welcome-role-badge">
+                    <span className={`role-dot role-${user?.role?.toLowerCase()}`}></span>
+                    {user?.role?.charAt(0).toUpperCase()}{user?.role?.slice(1)}
+                  </div>
+                </div>
+                <div className="welcome-stats">
+                  <div className="mini-stat">
+                    <span className="mini-stat-icon">💰</span>
+                    <div>
+                      <span className="mini-stat-value">₹{user?.walletBalance?.toFixed(0) || 0}</span>
+                      <span className="mini-stat-label">Wallet</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <h3 className="quick-actions-title">Quick Actions</h3>
             <div className="quick-links">
-              <Link to="/menu" className="quick-link-card">
+              <Link to="/menu" className="quick-link-card featured">
+                <div className="quick-link-badge">Popular</div>
                 <div className="quick-link-icon">🍔</div>
-                <h3>Order Food</h3>
-                <p>Explore our delicious menu and place orders</p>
+                <h3>Browse Menu</h3>
+                <p>Explore our delicious {user?.role === 'admin' || user?.role === 'canteen' ? 'offerings and manage items' : 'selection and place orders'}</p>
+                <span className="quick-link-arrow">→</span>
               </Link>
               <Link to="/orders" className="quick-link-card">
                 <div className="quick-link-icon">📋</div>
-                <h3>My Orders</h3>
-                <p>View order history and track status</p>
+                <h3>{user?.role === 'admin' || user?.role === 'canteen' ? 'All Orders' : 'My Orders'}</h3>
+                <p>{user?.role === 'admin' || user?.role === 'canteen' ? 'View and manage all customer orders' : 'Track orders and view history'}</p>
+                <span className="quick-link-arrow">→</span>
               </Link>
               <Link to="/profile" className="quick-link-card">
                 <div className="quick-link-icon">👤</div>
-                <h3>Profile</h3>
-                <p>Manage preferences and wallet</p>
+                <h3>My Profile</h3>
+                <p>Manage preferences, wallet and settings</p>
+                <span className="quick-link-arrow">→</span>
               </Link>
+              {(user?.role === 'admin' || user?.role === 'canteen') && (
+                <Link to="/admin" className="quick-link-card admin-card">
+                  <div className="quick-link-icon">⚙️</div>
+                  <h3>Admin Panel</h3>
+                  <p>Manage menu items, orders, and view statistics</p>
+                  <span className="quick-link-arrow">→</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -92,46 +128,86 @@ const Home: React.FC = () => {
 
       {/* Meal Categories Section */}
       <div className="meal-categories">
+        <div className="categories-bg-decoration"></div>
         <div className="categories-container">
           <div className="section-header">
-            <h2>Explore Our Menu</h2>
-            <p>Delicious options for every craving and dietary preference</p>
+            <div className="section-badge">
+              <span>🍽️</span> Our Menu
+            </div>
+            <h2>Explore Delicious Options</h2>
+            <p>From hearty meals to quick bites, find exactly what you're craving. Filter by dietary preferences including vegetarian, vegan, and gluten-free options.</p>
           </div>
           <div className="categories-grid">
-            <Link to="/menu" className="category-card">
+            <Link to="/menu" className="category-card breakfast">
+              <div className="category-glow"></div>
               <div className="category-icon-wrapper">
                 <span className="category-icon">🌅</span>
               </div>
-              <h3>Breakfast</h3>
-              <p>Start your day right</p>
+              <div className="category-content">
+                <h3>Breakfast</h3>
+                <p>Start your day with energizing breakfast options</p>
+                <span className="category-cta">View Items →</span>
+              </div>
+              <div className="category-decoration">☀️</div>
             </Link>
-            <Link to="/menu" className="category-card">
+            <Link to="/menu" className="category-card lunch">
+              <div className="category-glow"></div>
               <div className="category-icon-wrapper">
                 <span className="category-icon">🍛</span>
               </div>
-              <h3>Lunch</h3>
-              <p>Hearty meals for energy</p>
+              <div className="category-content">
+                <h3>Lunch</h3>
+                <p>Hearty meals to fuel your afternoon</p>
+                <span className="category-cta">View Items →</span>
+              </div>
+              <div className="category-decoration">🥗</div>
             </Link>
-            <Link to="/menu" className="category-card">
+            <Link to="/menu" className="category-card dinner">
+              <div className="category-glow"></div>
               <div className="category-icon-wrapper">
                 <span className="category-icon">🍽️</span>
               </div>
-              <h3>Dinner</h3>
-              <p>Evening delicacies</p>
+              <div className="category-content">
+                <h3>Dinner</h3>
+                <p>Delicious evening meals to end your day</p>
+                <span className="category-cta">View Items →</span>
+              </div>
+              <div className="category-decoration">🌙</div>
             </Link>
-            <Link to="/menu" className="category-card">
+            <Link to="/menu" className="category-card snacks">
+              <div className="category-glow"></div>
               <div className="category-icon-wrapper">
                 <span className="category-icon">🥪</span>
               </div>
-              <h3>Snacks</h3>
-              <p>Quick bites anytime</p>
+              <div className="category-content">
+                <h3>Snacks</h3>
+                <p>Quick bites for anytime cravings</p>
+                <span className="category-cta">View Items →</span>
+              </div>
+              <div className="category-decoration">🍿</div>
             </Link>
-            <Link to="/menu" className="category-card">
+            <Link to="/menu" className="category-card beverages">
+              <div className="category-glow"></div>
               <div className="category-icon-wrapper">
                 <span className="category-icon">☕</span>
               </div>
-              <h3>Beverages</h3>
-              <p>Refresh and recharge</p>
+              <div className="category-content">
+                <h3>Beverages</h3>
+                <p>Refresh with drinks and smoothies</p>
+                <span className="category-cta">View Items →</span>
+              </div>
+              <div className="category-decoration">🥤</div>
+            </Link>
+          </div>
+
+          <div className="menu-cta-section">
+            <Link to="/menu" className="menu-cta-button">
+              <span>🍕</span>
+              <div>
+                <span className="cta-title">View Full Menu</span>
+                <span className="cta-subtitle">Browse all categories and dietary options</span>
+              </div>
+              <span className="cta-arrow">→</span>
             </Link>
           </div>
         </div>
