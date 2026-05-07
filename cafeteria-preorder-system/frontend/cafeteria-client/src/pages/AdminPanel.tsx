@@ -9,10 +9,13 @@ const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
     totalOrders: 0,
-    todayOrders: 0,
     pendingOrders: 0,
-    revenue: 0,
-    todayRevenue: 0
+    confirmedOrders: 0,
+    preparingOrders: 0,
+    readyOrders: 0,
+    completedOrders: 0,
+    cancelledOrders: 0,
+    totalRevenue: 0
   });
   const [orders, setOrders] = useState<Order[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -29,17 +32,20 @@ const AdminPanel: React.FC = () => {
     try {
       const response = await orderAPI.getStats();
       setStats(response.data);
-    } catch (err) {
-      console.error('Failed to fetch stats');
+    } catch (err: any) {
+      console.error('Failed to fetch stats:', err);
+      setMessage(err.response?.data?.message || 'Failed to fetch stats');
     }
   };
 
   const fetchOrders = async () => {
     try {
       const response = await orderAPI.getOrders();
+      console.log('Orders fetched:', response.data);
       setOrders(response.data);
-    } catch (err) {
-      console.error('Failed to fetch orders');
+    } catch (err: any) {
+      console.error('Failed to fetch orders:', err);
+      setMessage(err.response?.data?.message || 'Failed to fetch orders');
     }
   };
 
@@ -47,8 +53,9 @@ const AdminPanel: React.FC = () => {
     try {
       const response = await menuAPI.getMenuItems();
       setMenuItems(response.data);
-    } catch (err) {
-      console.error('Failed to fetch menu items');
+    } catch (err: any) {
+      console.error('Failed to fetch menu items:', err);
+      setMessage(err.response?.data?.message || 'Failed to fetch menu items');
     }
   };
 
@@ -136,34 +143,34 @@ const AdminPanel: React.FC = () => {
             </div>
 
             <div className="stat-card">
-              <span className="stat-icon">📅</span>
+              <span className="stat-icon">⏳</span>
               <div className="stat-content">
-                <span className="stat-value">{stats.todayOrders}</span>
-                <span className="stat-label">Today's Orders</span>
+                <span className="stat-value">{stats.pendingOrders}</span>
+                <span className="stat-label">Pending</span>
               </div>
             </div>
 
             <div className="stat-card">
-              <span className="stat-icon">⏳</span>
+              <span className="stat-icon">🍳</span>
               <div className="stat-content">
-                <span className="stat-value">{stats.pendingOrders}</span>
-                <span className="stat-label">Pending Orders</span>
+                <span className="stat-value">{stats.preparingOrders}</span>
+                <span className="stat-label">Preparing</span>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <span className="stat-icon">✅</span>
+              <div className="stat-content">
+                <span className="stat-value">{stats.readyOrders}</span>
+                <span className="stat-label">Ready</span>
               </div>
             </div>
 
             <div className="stat-card">
               <span className="stat-icon">💰</span>
               <div className="stat-content">
-                <span className="stat-value">₹{stats.revenue.toFixed(2)}</span>
+                <span className="stat-value">₹{stats.totalRevenue?.toFixed(2) || '0.00'}</span>
                 <span className="stat-label">Total Revenue</span>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <span className="stat-icon">💵</span>
-              <div className="stat-content">
-                <span className="stat-value">₹{stats.todayRevenue.toFixed(2)}</span>
-                <span className="stat-label">Today's Revenue</span>
               </div>
             </div>
           </div>
@@ -204,7 +211,7 @@ const AdminPanel: React.FC = () => {
                   {orders.map(order => (
                     <tr key={order.id}>
                       <td>#{order.id}</td>
-                      <td>{order.user?.name || 'Unknown'}</td>
+                      <td>User #{order.userId}</td>
                       <td>₹{order.totalAmount.toFixed(2)}</td>
                       <td>
                         <span
@@ -214,7 +221,7 @@ const AdminPanel: React.FC = () => {
                           {order.status}
                         </span>
                       </td>
-                      <td>{order.pickupTime}</td>
+                      <td>{new Date(order.pickupDate).toLocaleDateString()} {order.pickupTime}</td>
                       <td>
                         <div className="status-actions">
                           {order.status === 'pending' && (

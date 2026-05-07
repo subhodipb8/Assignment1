@@ -19,10 +19,13 @@ const Orders: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
+      setError('');
       const response = await orderAPI.getOrders(filter || undefined);
       setOrders(response.data);
-    } catch (err) {
-      setError('Failed to load orders');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to load orders';
+      setError(errorMessage);
+      console.error('Error loading orders:', err);
     } finally {
       setIsLoading(false);
     }

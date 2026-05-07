@@ -18,15 +18,27 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetOrders([FromQuery] int? userId, [FromQuery] string? status)
+    public async Task<IActionResult> GetOrders([FromQuery] string? status)
     {
         var query = _context.Orders
             .Include(o => o.Items)
             .AsQueryable();
 
-        if (userId.HasValue)
+        // Get user context from headers (passed by API Gateway)
+        if (!Request.Headers.TryGetValue("X-User-Id", out var userIdValue) ||
+            !int.TryParse(userIdValue, out var userId))
         {
-            query = query.Where(o => o.UserId == userId.Value);
+            return Unauthorized(new { message = "User ID not found in request" });
+        }
+
+        // Check if user is admin
+        Request.Headers.TryGetValue("X-User-Role", out var role);
+        var isAdmin = role.ToString().ToLower() == "admin" || role.ToString().ToLower() == "canteen";
+
+        // Non-admin users can only see their own orders
+        if (!isAdmin)
+        {
+            query = query.Where(o => o.UserId == userId);
         }
 
         if (!string.IsNullOrEmpty(status))

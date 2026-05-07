@@ -33,11 +33,13 @@ const Navbar: React.FC = () => {
 
           {isAuthenticated ? (
             <>
-              <Link to="/cart" className="nav-link" onClick={() => setMenuOpen(false)}>
-                Cart
-              </Link>
+              {(user?.role?.toLowerCase() !== 'admin' && user?.role?.toLowerCase() !== 'canteen') && (
+                <Link to="/cart" className="nav-link" onClick={() => setMenuOpen(false)}>
+                  Cart
+                </Link>
+              )}
               <Link to="/orders" className="nav-link" onClick={() => setMenuOpen(false)}>
-                My Orders
+                {user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'canteen' ? 'All Orders' : 'My Orders'}
               </Link>
               <Link to="/profile" className="nav-link" onClick={() => setMenuOpen(false)}>
                 Profile

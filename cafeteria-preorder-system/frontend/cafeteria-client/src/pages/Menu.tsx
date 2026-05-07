@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { menuAPI } from '../services/api';
 import { MenuItem } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import './Menu.css';
 
 const Menu: React.FC = () => {
@@ -14,6 +15,9 @@ const Menu: React.FC = () => {
     () => JSON.parse(localStorage.getItem('cart') || '[]')
   );
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+  const { user } = useAuth();
+
+  const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'canteen';
 
   useEffect(() => {
     fetchMenuItems();
@@ -109,7 +113,7 @@ const Menu: React.FC = () => {
         </div>
       </div>
 
-      {cart.length > 0 && (
+      {!isAdmin && cart.length > 0 && (
         <div className="cart-preview">
           <span>🛒 Cart: {cart.reduce((sum, c) => sum + c.quantity, 0)} items</span>
           <span>₹{cart.reduce((sum, c) => sum + (c.menuItem.price * c.quantity), 0).toFixed(2)}</span>
@@ -167,13 +171,15 @@ const Menu: React.FC = () => {
                   <span className={`availability ${item.available ? 'available' : 'unavailable'}`}>
                     {item.available ? '✓ Available' : '✗ Sold Out'}
                   </span>
-                  <button
-                    onClick={() => addToCart(item)}
-                    disabled={!item.available}
-                    className="add-btn"
-                  >
-                    Add to Cart
-                  </button>
+                  {!isAdmin && (
+                    <button
+                      onClick={() => addToCart(item)}
+                      disabled={!item.available}
+                      className="add-btn"
+                    >
+                      Add to Cart
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI, userAPI } from '../services/api';
 import { CartItem } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import './Cart.css';
 
 const PICKUP_TIMES = [
@@ -26,6 +27,14 @@ const Cart: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Redirect admin/canteen users away from cart
+  useEffect(() => {
+    if (user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'canteen') {
+      navigate('/menu');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     fetchWalletBalance();
