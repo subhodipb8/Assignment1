@@ -81,10 +81,12 @@ const Cart: React.FC = () => {
       const orderData = {
         items: cart.map(item => ({
           menuItemId: item.menuItem.id,
-          quantity: item.quantity
+          quantity: item.quantity,
+          price: item.menuItem.price,
+          menuItemName: item.menuItem.name
         })),
-        pickupTime,
-        pickupDate: new Date(pickupDate),
+        pickupTime: new Date(`${pickupDate}T${pickupTime}:00`).toISOString(),
+        pickupDate: new Date(pickupDate).toISOString(),
         specialInstructions
       };
 
@@ -97,7 +99,9 @@ const Cart: React.FC = () => {
         navigate('/orders');
       }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+      console.error('Order error:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to place order. Please try again.';
+      setError(`Failed to place order: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +221,7 @@ const Cart: React.FC = () => {
               onClick={handleCheckout}
               disabled={isLoading || calculateTotal() > walletBalance}
             >
-              {isLoading ? 'Placing Order...' : `Pay ₹${calculateTotal().toFixed(2)}`}
+              {isLoading ? 'Processing...' : `Pay ₹${calculateTotal().toFixed(2)}`}
             </button>
           </div>
         </div>

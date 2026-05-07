@@ -28,13 +28,16 @@ const Menu: React.FC = () => {
   const fetchMenuItems = async () => {
     try {
       setIsLoading(true);
+      setError('');
       const response = await menuAPI.getMenuItems({
         category: selectedCategory || undefined,
         available: true
       });
       setMenuItems(response.data);
-    } catch (err) {
-      setError('Failed to load menu items');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to load menu items';
+      console.error('Menu loading error:', err);
+      setError(`Failed to load menu items: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

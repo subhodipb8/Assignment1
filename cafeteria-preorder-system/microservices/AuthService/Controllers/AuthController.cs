@@ -142,6 +142,13 @@ public class AuthController : ControllerBase
 
     private int? GetUserIdFromToken()
     {
+        // First check for forwarded header from API Gateway
+        if (Request.Headers.TryGetValue("X-User-Id", out var userIdValue) && int.TryParse(userIdValue, out var userIdFromHeader))
+        {
+            return userIdFromHeader;
+        }
+
+        // Fall back to validating token directly
         var authHeader = Request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {

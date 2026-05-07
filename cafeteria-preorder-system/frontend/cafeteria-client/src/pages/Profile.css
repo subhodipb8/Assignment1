@@ -1,12 +1,22 @@
 .profile-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 100px 24px 40px;
+  min-height: 100vh;
 }
 
 .profile-container h1 {
   color: #2c3e50;
   margin-bottom: 24px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
 }
 
 .message {

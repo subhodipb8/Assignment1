@@ -81,7 +81,7 @@ const Login: React.FC = () => {
 
         <div className="demo-accounts">
           <h4>Demo Accounts:</h4>
-          <p><strong>Student:</strong> student@cafeteria.com / student123</p>
+          <p><strong>Student:</strong> john@student.com / student123</p>
           <p><strong>Admin:</strong> admin@cafeteria.com / admin123</p>
           <p><strong>Canteen:</strong> canteen@cafeteria.com / canteen123</p>
         </div>

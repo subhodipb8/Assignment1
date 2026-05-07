@@ -81,8 +81,8 @@ public class OrdersController : ControllerBase
         {
             UserId = userId,
             TotalAmount = totalAmount,
-            PickupTime = request.PickupTime,
-            PickupDate = request.PickupDate,
+            PickupTime = request.PickupTime.Kind == DateTimeKind.Utc ? request.PickupTime : request.PickupTime.ToUniversalTime(),
+            PickupDate = request.PickupDate.Kind == DateTimeKind.Utc ? request.PickupDate : request.PickupDate.ToUniversalTime(),
             Status = "pending",
             PaymentStatus = "unpaid",
             SpecialInstructions = request.SpecialInstructions,

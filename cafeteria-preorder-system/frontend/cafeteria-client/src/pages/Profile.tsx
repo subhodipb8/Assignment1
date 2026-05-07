@@ -12,6 +12,7 @@ const Profile: React.FC = () => {
   });
   const [addAmount, setAddAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const dietaryOptions = ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'halal', 'kosher'];
@@ -21,15 +22,22 @@ const Profile: React.FC = () => {
   }, []);
 
   const fetchUserData = async () => {
+    setIsPageLoading(true);
     try {
       const [walletRes, prefsRes] = await Promise.all([
         userAPI.getWalletBalance(),
         userAPI.getPreferences()
       ]);
       setWalletBalance(walletRes.data.balance);
-      setPreferences(prefsRes.data);
+      setPreferences({
+        dietaryPreferences: prefsRes.data.dietaryPreferences || [],
+        allergies: prefsRes.data.allergies || []
+      });
     } catch (err) {
-      console.error('Failed to fetch user data');
+      console.error('Failed to fetch user data:', err);
+      setMessage({ type: 'error', text: 'Failed to load profile data' });
+    } finally {
+      setIsPageLoading(false);
     }
   };
 
@@ -73,6 +81,14 @@ const Profile: React.FC = () => {
       : [...preferences.dietaryPreferences, pref];
     setPreferences({ ...preferences, dietaryPreferences: newPrefs });
   };
+
+  if (isPageLoading) {
+    return (
+      <div className="profile-container">
+        <div className="loading">Loading profile...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">
