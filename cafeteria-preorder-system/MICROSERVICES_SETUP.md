@@ -13,7 +13,7 @@ This guide explains how to set up and run the Cafeteria Pre-ordering System with
        │ All API calls
        ▼
 ┌──────────────┐
-│ API Gateway  │  http://localhost:5000
+│ API Gateway  │  http://localhost:5010
 │   (Ocelot)   │
 └──────┬───────┘
        │ Routes requests
@@ -132,10 +132,10 @@ cd microservices/ApiGateway
 dotnet restore
 
 # Run the gateway
-dotnet run --urls "http://localhost:5000"
+dotnet run --urls "http://localhost:5010"
 ```
 
-**Verify:** Open http://localhost:5000/api/menu (should proxy to Menu service)
+**Verify:** Open http://localhost:5010/api/menu (should proxy to Menu service)
 
 ### Step 5: Frontend
 
@@ -216,7 +216,7 @@ dotnet run --urls "http://localhost:5003"
 **Terminal 4 - API Gateway:**
 ```bash
 cd microservices/ApiGateway
-dotnet run --urls "http://localhost:5000"
+dotnet run --urls "http://localhost:5010"
 ```
 
 **Terminal 5 - Frontend:**
@@ -251,7 +251,7 @@ tmux send-keys -t 1 'cd microservices/MenuService && dotnet run --urls "http://l
 tmux send-keys -t 2 'cd microservices/OrderService && dotnet run --urls "http://localhost:5003"' C-m
 
 # Pane 3: API Gateway
-tmux send-keys -t 3 'cd microservices/ApiGateway && dotnet run --urls "http://localhost:5000"' C-m
+tmux send-keys -t 3 'cd microservices/ApiGateway && dotnet run --urls "http://localhost:5010"' C-m
 
 tmux attach-session -t cafeteria
 ```
@@ -350,7 +350,7 @@ docker-compose up --build
 ### 1. Register a User
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/register \
+curl -X POST http://localhost:5010/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test Student",
@@ -363,7 +363,7 @@ curl -X POST http://localhost:5000/api/auth/register \
 ### 2. Login
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST http://localhost:5010/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "student@test.com",
@@ -376,13 +376,13 @@ Save the token from the response.
 ### 3. Get Menu (No Auth Required)
 
 ```bash
-curl http://localhost:5000/api/menu
+curl http://localhost:5010/api/menu
 ```
 
 ### 4. Create Order (Auth Required)
 
 ```bash
-curl -X POST http://localhost:5000/api/orders \
+curl -X POST http://localhost:5010/api/orders \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
@@ -472,7 +472,7 @@ dotnet ef database update
 | Auth | http://localhost:5001/api/auth/login | 400 (validation error) |
 | Menu | http://localhost:5002/api/menu | 200 + [] or menu items |
 | Order | http://localhost:5003/api/orders | 200 + [] or orders |
-| Gateway | http://localhost:5000/api/menu | 200 (proxies to Menu) |
+| Gateway | http://localhost:5010/api/menu | 200 (proxies to Menu) |
 
 ## Shutdown
 

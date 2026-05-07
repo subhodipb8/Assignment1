@@ -193,7 +193,7 @@ order_items:
 ├─────────────────────────────────────────────────────────┤
 │  React Frontend (localhost:3000)                        │
 ├─────────────────────────────────────────────────────────┤
-│  API Gateway (localhost:5000)                           │
+│  API Gateway (localhost:5010)                           │
 ├─────────────────────────────────────────────────────────┤
 │  Auth Service (localhost:5001)                           │
 │  Menu Service (localhost:5002)                           │

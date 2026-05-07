@@ -202,7 +202,7 @@ The app will be available at `http://localhost:3000`
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| API Gateway | http://localhost:5000 | Entry point for all requests |
+| API Gateway | http://localhost:5010 | Entry point for all requests |
 | Auth Service | http://localhost:5001 | Direct access (dev only) |
 | Menu Service | http://localhost:5002 | Direct access (dev only) |
 | Order Service | http://localhost:5003 | Direct access (dev only) |
