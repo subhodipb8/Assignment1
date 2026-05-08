@@ -54,6 +54,7 @@ export const orderAPI = {
 export const userAPI = {
   getWalletBalance: () => api.get('/users/wallet'),
   addFunds: (amount: number) => api.post('/users/wallet/add', { amount }),
+  deductFunds: (amount: number) => api.post('/users/wallet/deduct', { amount }),
   getPreferences: () => api.get('/users/preferences'),
   updatePreferences: (data: { dietaryPreferences?: string[]; allergies?: string[] }) =>
     api.put('/users/preferences', data),

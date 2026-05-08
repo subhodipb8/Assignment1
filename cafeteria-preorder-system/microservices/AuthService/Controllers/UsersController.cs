@@ -63,6 +63,37 @@ public class UsersController : ControllerBase
         return Ok(new { balance = user.WalletBalance });
     }
 
+    [HttpPost("wallet/deduct")]
+    public async Task<IActionResult> DeductFunds([FromBody] UpdateWalletRequest request)
+    {
+        var userId = GetUserIdFromToken();
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "Not authenticated" });
+        }
+
+        if (request.Amount <= 0)
+        {
+            return BadRequest(new { message = "Amount must be positive" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        if (user.WalletBalance < request.Amount)
+        {
+            return BadRequest(new { message = "Insufficient funds" });
+        }
+
+        user.WalletBalance -= request.Amount;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { balance = user.WalletBalance });
+    }
+
     [HttpGet("preferences")]
     public async Task<IActionResult> GetPreferences()
     {

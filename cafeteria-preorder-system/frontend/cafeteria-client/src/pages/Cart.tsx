@@ -99,7 +99,12 @@ const Cart: React.FC = () => {
         specialInstructions
       };
 
+      // Create order first
       await orderAPI.createOrder(orderData);
+
+      // Deduct from wallet
+      await userAPI.deductFunds(total);
+
       setSuccess('Order placed successfully!');
       setCart([]);
       localStorage.removeItem('cart');
