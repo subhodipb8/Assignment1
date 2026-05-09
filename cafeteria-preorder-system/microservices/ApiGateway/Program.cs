@@ -5,11 +5,18 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ApiGateway.DelegatingHandlers;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Ocelot configuration
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+
+// Add Controllers
+builder.Services.AddControllers();
+
+// Add HttpClient for Swagger aggregation
+builder.Services.AddHttpClient();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -51,6 +58,11 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Include XML comments
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 // Configure JWT Authentication for Gateway
@@ -108,6 +120,8 @@ app.UseSwaggerUI(c =>
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllers();
 
 await app.UseOcelot();
 
