@@ -18,6 +18,9 @@ public class MenuItem
     [MaxLength(50)]
     public string Category { get; set; } = string.Empty;
 
+    [MaxLength(500)]
+    public string? Image { get; set; }
+
     public string[]? DietaryTags { get; set; }
 
     public string[]? Allergens { get; set; }

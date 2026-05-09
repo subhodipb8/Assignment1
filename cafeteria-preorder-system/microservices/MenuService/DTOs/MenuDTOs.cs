@@ -6,6 +6,7 @@ public class CreateMenuItemRequest
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
+    public string? Image { get; set; }
     public string[]? DietaryTags { get; set; }
     public string[]? Allergens { get; set; }
     public bool Available { get; set; } = true;
@@ -19,6 +20,7 @@ public class UpdateMenuItemRequest
     public string? Description { get; set; }
     public decimal? Price { get; set; }
     public string? Category { get; set; }
+    public string? Image { get; set; }
     public string[]? DietaryTags { get; set; }
     public string[]? Allergens { get; set; }
     public bool? Available { get; set; }
@@ -33,6 +35,7 @@ public class MenuItemDto
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
+    public string? Image { get; set; }
     public string[]? DietaryTags { get; set; }
     public string[]? Allergens { get; set; }
     public bool Available { get; set; }

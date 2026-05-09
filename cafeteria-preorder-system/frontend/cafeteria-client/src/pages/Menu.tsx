@@ -29,6 +29,7 @@ const Menu: React.FC = () => {
     description: '',
     price: '',
     category: 'main',
+    image: '',
     dietaryTags: [] as string[],
     allergens: [] as string[],
     available: true,
@@ -160,6 +161,7 @@ const Menu: React.FC = () => {
       description: item.description || '',
       price: item.price.toString(),
       category: item.category,
+      image: item.image || '',
       dietaryTags: item.dietaryTags || [],
       allergens: item.allergens || [],
       available: item.available,
@@ -406,6 +408,24 @@ const Menu: React.FC = () => {
                 </div>
               </div>
 
+              <div className="form-group">
+                <label>Image URL</label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {formData.image && (
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="image-preview"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Prep Time (min)</label>
@@ -520,6 +540,24 @@ const Menu: React.FC = () => {
                     <option value="snack">Snack</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Image URL</label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {formData.image && (
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="image-preview"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
               </div>
 
               <div className="form-row">

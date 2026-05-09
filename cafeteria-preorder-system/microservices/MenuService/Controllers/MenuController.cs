@@ -136,6 +136,7 @@ public class MenuController : ControllerBase
             Description = request.Description?.Trim(),
             Price = request.Price,
             Category = request.Category.Trim().ToLower(),
+            Image = request.Image?.Trim(),
             DietaryTags = request.DietaryTags,
             Allergens = request.Allergens,
             Available = request.Available,
@@ -191,6 +192,7 @@ public class MenuController : ControllerBase
         if (request.Description != null) item.Description = request.Description.Trim();
         if (request.Price.HasValue) item.Price = request.Price.Value;
         if (request.Category != null) item.Category = request.Category.Trim().ToLower();
+        if (request.Image != null) item.Image = request.Image.Trim();
         if (request.DietaryTags != null) item.DietaryTags = request.DietaryTags;
         if (request.Allergens != null) item.Allergens = request.Allergens;
         if (request.Available.HasValue) item.Available = request.Available.Value;
@@ -287,6 +289,7 @@ public class MenuController : ControllerBase
                 Description = "Classic tomato and mozzarella pizza",
                 Price = 8.99m,
                 Category = "main",
+                Image = "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&auto=format&fit=crop",
                 DietaryTags = new[] { "vegetarian" },
                 Allergens = new[] { "gluten", "dairy" },
                 Available = true,
@@ -299,6 +302,7 @@ public class MenuController : ControllerBase
                 Description = "Fresh romaine lettuce with grilled chicken and caesar dressing",
                 Price = 10.99m,
                 Category = "main",
+                Image = "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=500&auto=format&fit=crop",
                 DietaryTags = new[] { "high-protein" },
                 Allergens = new[] { "dairy", "eggs" },
                 Available = true,
@@ -311,6 +315,7 @@ public class MenuController : ControllerBase
                 Description = "Quinoa, avocado, chickpeas, and seasonal vegetables",
                 Price = 9.99m,
                 Category = "main",
+                Image = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop",
                 DietaryTags = new[] { "vegan", "gluten-free" },
                 Allergens = Array.Empty<string>(),
                 Available = true,
@@ -323,6 +328,7 @@ public class MenuController : ControllerBase
                 Description = "Freshly squeezed orange juice",
                 Price = 3.99m,
                 Category = "beverage",
+                Image = "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop",
                 DietaryTags = new[] { "vegan", "gluten-free" },
                 Allergens = Array.Empty<string>(),
                 Available = true,
@@ -391,6 +397,7 @@ public class MenuController : ControllerBase
         Description = item.Description,
         Price = item.Price,
         Category = item.Category,
+        Image = item.Image,
         DietaryTags = item.DietaryTags,
         Allergens = item.Allergens,
         Available = item.Available,
