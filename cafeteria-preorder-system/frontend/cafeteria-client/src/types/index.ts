@@ -25,7 +25,7 @@ export interface MenuItem {
   };
   available: boolean;
   preparationTime: number;
-  maxOrderPerDay: number;
+  maxOrdersPerDay: number;
   ordersToday: number;
 }
 

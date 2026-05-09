@@ -93,18 +93,33 @@ public class MenuController : ControllerBase
     /// Create a new menu item
     /// </summary>
     /// <remarks>
-    /// Creates a new menu item with the specified details.
+    /// Creates a new menu item with the specified details. Requires admin or canteen role.
     /// Name is required and price must be greater than 0.
     /// </remarks>
     /// <param name="request">Menu item creation details</param>
     /// <returns>Created menu item</returns>
     /// <response code="201">Menu item created successfully</response>
     /// <response code="400">Invalid input - missing name or invalid price</response>
+    /// <response code="401">Not authenticated</response>
+    /// <response code="403">Forbidden - requires admin or canteen role</response>
     [HttpPost]
     [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] CreateMenuItemRequest request)
     {
+        // Check authorization
+        if (!IsAuthorized())
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        if (!HasMenuManagementRole())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Forbidden - requires admin or canteen role" });
+        }
+
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             return BadRequest(new { message = "Name is required" });
@@ -138,19 +153,34 @@ public class MenuController : ControllerBase
     /// Update an existing menu item
     /// </summary>
     /// <remarks>
-    /// Updates a menu item with the specified details.
+    /// Updates a menu item with the specified details. Requires admin or canteen role.
     /// Only provided fields will be updated (partial updates supported).
     /// </remarks>
     /// <param name="id">The menu item ID</param>
     /// <param name="request">Updated menu item details</param>
     /// <returns>Updated menu item</returns>
     /// <response code="200">Menu item updated successfully</response>
+    /// <response code="401">Not authenticated</response>
+    /// <response code="403">Forbidden - requires admin or canteen role</response>
     /// <response code="404">Menu item not found</response>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateMenuItemRequest request)
     {
+        // Check authorization
+        if (!IsAuthorized())
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        if (!HasMenuManagementRole())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Forbidden - requires admin or canteen role" });
+        }
+
         var item = await _context.MenuItems.FindAsync(id);
         if (item == null)
         {
@@ -176,17 +206,32 @@ public class MenuController : ControllerBase
     /// Delete a menu item
     /// </summary>
     /// <remarks>
-    /// Permanently removes a menu item from the database.
+    /// Permanently removes a menu item from the database. Requires admin or canteen role.
     /// </remarks>
     /// <param name="id">The menu item ID</param>
     /// <returns>No content on success</returns>
     /// <response code="204">Menu item deleted successfully</response>
+    /// <response code="401">Not authenticated</response>
+    /// <response code="403">Forbidden - requires admin or canteen role</response>
     /// <response code="404">Menu item not found</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
+        // Check authorization
+        if (!IsAuthorized())
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        if (!HasMenuManagementRole())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Forbidden - requires admin or canteen role" });
+        }
+
         var item = await _context.MenuItems.FindAsync(id);
         if (item == null)
         {
@@ -203,17 +248,32 @@ public class MenuController : ControllerBase
     /// Seed sample menu data
     /// </summary>
     /// <remarks>
-    /// Populates the database with sample menu items for testing.
+    /// Populates the database with sample menu items for testing. Requires admin or canteen role.
     /// Can only be used on an empty database.
     /// </remarks>
     /// <returns>Success message with count of items added</returns>
     /// <response code="200">Sample data added successfully</response>
     /// <response code="400">Database already contains data</response>
+    /// <response code="401">Not authenticated</response>
+    /// <response code="403">Forbidden - requires admin or canteen role</response>
     [HttpPost("seed")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> SeedData()
     {
+        // Check authorization
+        if (!IsAuthorized())
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        if (!HasMenuManagementRole())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Forbidden - requires admin or canteen role" });
+        }
+
         if (await _context.MenuItems.AnyAsync())
         {
             return BadRequest(new { message = "Database already contains data" });
@@ -295,6 +355,33 @@ public class MenuController : ControllerBase
             .ToListAsync();
 
         return Ok(categories);
+    }
+
+    /// <summary>
+    /// Check if user is authenticated
+    /// </summary>
+    private bool IsAuthorized()
+    {
+        // Check for forwarded header from API Gateway
+        if (Request.Headers.TryGetValue("X-User-Id", out var userIdValue) &&
+            int.TryParse(userIdValue, out var userId))
+        {
+            return userId > 0;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Check if user has menu management role (admin or canteen)
+    /// </summary>
+    private bool HasMenuManagementRole()
+    {
+        if (Request.Headers.TryGetValue("X-User-Role", out var role))
+        {
+            var roleString = role.ToString().ToLower();
+            return roleString == "admin" || roleString == "canteen";
+        }
+        return false;
     }
 
     private static MenuItemDto MapToDto(MenuItem item) => new()
