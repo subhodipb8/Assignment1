@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MenuService.Data;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,36 @@ builder.Services.AddSwaggerGen(c =>
         Title = "Menu Service API",
         Version = "v1",
         Description = "Menu Management API for Cafeteria System"
+    });
+
+    // Include XML comments
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    // Add API Gateway authentication header
+    c.AddSecurityDefinition("X-User-Id", new OpenApiSecurityScheme
+    {
+        Description = "User ID header forwarded by API Gateway",
+        Name = "X-User-Id",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "X-User-Id"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "X-User-Id"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 

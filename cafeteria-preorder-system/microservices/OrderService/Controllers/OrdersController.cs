@@ -6,18 +6,40 @@ using OrderService.Models;
 
 namespace OrderService.Controllers;
 
+/// <summary>
+/// Order management controller for cafeteria order operations
+/// </summary>
 [ApiController]
 [Route("api/orders")]
+[Produces("application/json")]
 public class OrdersController : ControllerBase
 {
     private readonly OrderDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the OrdersController
+    /// </summary>
+    /// <param name="context">Database context for order operations</param>
     public OrdersController(OrderDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Get all orders with optional filtering
+    /// </summary>
+    /// <remarks>
+    /// Retrieves a list of orders. Admins and canteen staff see all orders,
+    /// while regular users only see their own orders.
+    /// Results are ordered by creation date (newest first).
+    /// </remarks>
+    /// <param name="status">Optional filter by status (e.g., "pending", "completed")</param>
+    /// <returns>List of orders</returns>
+    /// <response code="200">Orders retrieved successfully</response>
+    /// <response code="401">User ID not found in request</response>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetOrders([FromQuery] string? status)
     {
         var query = _context.Orders
@@ -50,7 +72,19 @@ public class OrdersController : ControllerBase
         return Ok(orders.Select(MapToDto));
     }
 
+    /// <summary>
+    /// Get a specific order by ID
+    /// </summary>
+    /// <remarks>
+    /// Retrieves detailed information about a specific order including all items.
+    /// </remarks>
+    /// <param name="id">The order ID</param>
+    /// <returns>Order details with items</returns>
+    /// <response code="200">Order found</response>
+    /// <response code="404">Order not found</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var order = await _context.Orders
@@ -65,7 +99,23 @@ public class OrdersController : ControllerBase
         return Ok(MapToDto(order));
     }
 
+    /// <summary>
+    /// Create a new order
+    /// </summary>
+    /// <remarks>
+    /// Creates a new order with the specified items and pickup time.
+    /// Order must contain at least one item and pickup date cannot be in the past.
+    /// Total amount is calculated automatically from item prices and quantities.
+    /// </remarks>
+    /// <param name="request">Order creation details including items and pickup time</param>
+    /// <returns>Created order</returns>
+    /// <response code="201">Order created successfully</response>
+    /// <response code="400">Invalid input - empty items or past pickup date</response>
+    /// <response code="401">User ID not found in request</response>
     [HttpPost]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateOrderRequest request)
     {
         // Get UserId from header (passed by API Gateway)
@@ -113,7 +163,24 @@ public class OrdersController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = order.Id }, MapToDto(order));
     }
 
+    /// <summary>
+    /// Update order status
+    /// </summary>
+    /// <remarks>
+    /// Updates the status of an existing order.
+    /// Valid statuses: pending, confirmed, preparing, ready, completed, cancelled.
+    /// When status is set to "completed", payment status is automatically set to "paid".
+    /// </remarks>
+    /// <param name="id">The order ID</param>
+    /// <param name="request">New status value</param>
+    /// <returns>Updated order</returns>
+    /// <response code="200">Order status updated successfully</response>
+    /// <response code="400">Invalid status value</response>
+    /// <response code="404">Order not found</response>
     [HttpPut("{id}/status")]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
     {
         var order = await _context.Orders.FindAsync(id);
@@ -141,7 +208,27 @@ public class OrdersController : ControllerBase
         return Ok(MapToDto(order));
     }
 
+    /// <summary>
+    /// Cancel an order
+    /// </summary>
+    /// <remarks>
+    /// Cancels an existing order. Users can only cancel their own orders,
+    /// while admins and canteen staff can cancel any order.
+    /// Cannot cancel orders that are already completed or cancelled.
+    /// </remarks>
+    /// <param name="id">The order ID</param>
+    /// <returns>Success message</returns>
+    /// <response code="200">Order cancelled successfully</response>
+    /// <response code="400">Order already completed or cancelled</response>
+    /// <response code="401">User ID not found in request</response>
+    /// <response code="403">User not authorized to cancel this order</response>
+    /// <response code="404">Order not found</response>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelOrder(int id)
     {
         // Get UserId from header
@@ -183,7 +270,17 @@ public class OrdersController : ControllerBase
         return Ok(new { message = "Order cancelled successfully" });
     }
 
+    /// <summary>
+    /// Get order statistics
+    /// </summary>
+    /// <remarks>
+    /// Returns aggregate statistics for all orders including counts by status
+    /// and total revenue from completed orders.
+    /// </remarks>
+    /// <returns>Order statistics</returns>
+    /// <response code="200">Statistics retrieved successfully</response>
     [HttpGet("stats")]
+    [ProducesResponseType(typeof(OrderStatsDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStats()
     {
         var orders = await _context.Orders.ToListAsync();
@@ -203,7 +300,19 @@ public class OrdersController : ControllerBase
         return Ok(stats);
     }
 
+    /// <summary>
+    /// Get current user's orders
+    /// </summary>
+    /// <remarks>
+    /// Retrieves all orders for the authenticated user.
+    /// Results are ordered by creation date (newest first).
+    /// </remarks>
+    /// <returns>List of user's orders</returns>
+    /// <response code="200">Orders retrieved successfully</response>
+    /// <response code="401">User ID not found in request</response>
     [HttpGet("my-orders")]
+    [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMyOrders()
     {
         if (!Request.Headers.TryGetValue("X-User-Id", out var userIdValue) ||

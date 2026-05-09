@@ -7,20 +7,44 @@ using AuthService.Services;
 
 namespace AuthService.Controllers;
 
+/// <summary>
+/// Authentication controller for user registration, login, and profile management
+/// </summary>
 [ApiController]
 [Route("api/auth")]
+[Produces("application/json")]
 public class AuthController : ControllerBase
 {
     private readonly AuthDbContext _context;
     private readonly IJwtService _jwtService;
 
+    /// <summary>
+    /// Initializes a new instance of the AuthController
+    /// </summary>
+    /// <param name="context">Database context for user operations</param>
+    /// <param name="jwtService">Service for JWT token generation</param>
     public AuthController(AuthDbContext context, IJwtService jwtService)
     {
         _context = context;
         _jwtService = jwtService;
     }
 
+    /// <summary>
+    /// Register a new user account
+    /// </summary>
+    /// <remarks>
+    /// Creates a new user with the specified details. Valid roles are: student, staff, admin, canteen.
+    /// The email must be unique and will be normalized to lowercase.
+    /// </remarks>
+    /// <param name="request">User registration details including name, email, password, and role</param>
+    /// <returns>Newly created user with JWT token</returns>
+    /// <response code="200">User registered successfully</response>
+    /// <response code="400">Invalid input - missing required fields or invalid role</response>
+    /// <response code="409">User with this email already exists</response>
     [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         // Validate request
@@ -75,7 +99,22 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Authenticate user and generate JWT token
+    /// </summary>
+    /// <remarks>
+    /// Validates user credentials and returns a JWT token for authenticated requests.
+    /// Email matching is case-insensitive.
+    /// </remarks>
+    /// <param name="request">Login credentials containing email and password</param>
+    /// <returns>Authenticated user with JWT token</returns>
+    /// <response code="200">Login successful</response>
+    /// <response code="400">Missing email or password</response>
+    /// <response code="401">Invalid email or password</response>
     [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email) ||
@@ -112,7 +151,21 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get current authenticated user details
+    /// </summary>
+    /// <remarks>
+    /// Retrieves the profile information of the currently authenticated user.
+    /// Requires authentication via JWT token or X-User-Id header.
+    /// </remarks>
+    /// <returns>Current user profile</returns>
+    /// <response code="200">User profile retrieved successfully</response>
+    /// <response code="401">Not authenticated</response>
+    /// <response code="404">User not found</response>
     [HttpGet("me")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCurrentUser()
     {
         var userId = GetUserIdFromToken();

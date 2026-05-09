@@ -6,18 +6,39 @@ using MenuService.Models;
 
 namespace MenuService.Controllers;
 
+/// <summary>
+/// Menu management controller for cafeteria menu items
+/// </summary>
 [ApiController]
 [Route("api/menu")]
+[Produces("application/json")]
 public class MenuController : ControllerBase
 {
     private readonly MenuDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the MenuController
+    /// </summary>
+    /// <param name="context">Database context for menu operations</param>
     public MenuController(MenuDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Get all menu items with optional filtering
+    /// </summary>
+    /// <remarks>
+    /// Retrieves a list of menu items that can be filtered by category, search term, or availability.
+    /// Results are ordered by category then name.
+    /// </remarks>
+    /// <param name="category">Optional filter by category (e.g., "main", "beverage", "dessert")</param>
+    /// <param name="search">Optional search term for name or description</param>
+    /// <param name="available">Optional filter by availability (true/false)</param>
+    /// <returns>List of menu items</returns>
+    /// <response code="200">Menu items retrieved successfully</response>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<MenuItemDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll([FromQuery] string? category, [FromQuery] string? search, [FromQuery] bool? available)
     {
         var query = _context.MenuItems.AsQueryable();
@@ -44,7 +65,19 @@ public class MenuController : ControllerBase
         return Ok(items.Select(MapToDto));
     }
 
+    /// <summary>
+    /// Get a specific menu item by ID
+    /// </summary>
+    /// <remarks>
+    /// Retrieves detailed information about a specific menu item.
+    /// </remarks>
+    /// <param name="id">The menu item ID</param>
+    /// <returns>Menu item details</returns>
+    /// <response code="200">Menu item found</response>
+    /// <response code="404">Menu item not found</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var item = await _context.MenuItems.FindAsync(id);
@@ -56,7 +89,20 @@ public class MenuController : ControllerBase
         return Ok(MapToDto(item));
     }
 
+    /// <summary>
+    /// Create a new menu item
+    /// </summary>
+    /// <remarks>
+    /// Creates a new menu item with the specified details.
+    /// Name is required and price must be greater than 0.
+    /// </remarks>
+    /// <param name="request">Menu item creation details</param>
+    /// <returns>Created menu item</returns>
+    /// <response code="201">Menu item created successfully</response>
+    /// <response code="400">Invalid input - missing name or invalid price</response>
     [HttpPost]
+    [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateMenuItemRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
@@ -88,7 +134,21 @@ public class MenuController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = menuItem.Id }, MapToDto(menuItem));
     }
 
+    /// <summary>
+    /// Update an existing menu item
+    /// </summary>
+    /// <remarks>
+    /// Updates a menu item with the specified details.
+    /// Only provided fields will be updated (partial updates supported).
+    /// </remarks>
+    /// <param name="id">The menu item ID</param>
+    /// <param name="request">Updated menu item details</param>
+    /// <returns>Updated menu item</returns>
+    /// <response code="200">Menu item updated successfully</response>
+    /// <response code="404">Menu item not found</response>
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateMenuItemRequest request)
     {
         var item = await _context.MenuItems.FindAsync(id);
@@ -112,7 +172,19 @@ public class MenuController : ControllerBase
         return Ok(MapToDto(item));
     }
 
+    /// <summary>
+    /// Delete a menu item
+    /// </summary>
+    /// <remarks>
+    /// Permanently removes a menu item from the database.
+    /// </remarks>
+    /// <param name="id">The menu item ID</param>
+    /// <returns>No content on success</returns>
+    /// <response code="204">Menu item deleted successfully</response>
+    /// <response code="404">Menu item not found</response>
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
         var item = await _context.MenuItems.FindAsync(id);
@@ -127,7 +199,19 @@ public class MenuController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Seed sample menu data
+    /// </summary>
+    /// <remarks>
+    /// Populates the database with sample menu items for testing.
+    /// Can only be used on an empty database.
+    /// </remarks>
+    /// <returns>Success message with count of items added</returns>
+    /// <response code="200">Sample data added successfully</response>
+    /// <response code="400">Database already contains data</response>
     [HttpPost("seed")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SeedData()
     {
         if (await _context.MenuItems.AnyAsync())
@@ -193,7 +277,16 @@ public class MenuController : ControllerBase
         return Ok(new { message = "Sample data added successfully", count = menuItems.Count });
     }
 
+    /// <summary>
+    /// Get all unique categories
+    /// </summary>
+    /// <remarks>
+    /// Returns a list of distinct categories currently used by menu items.
+    /// </remarks>
+    /// <returns>List of category names</returns>
+    /// <response code="200">Categories retrieved successfully</response>
     [HttpGet("categories")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCategories()
     {
         var categories = await _context.MenuItems
